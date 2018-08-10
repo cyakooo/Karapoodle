@@ -22,6 +22,7 @@ model.add(layers.Conv2D(128, (3, 3), activation='relu'))
 model.add(layers.MaxPooling2D((2, 2)))
 # CNNの上に分類器を追加
 model.add(layers.Flatten())
+model.add(layers.Dropout(0, 5))
 model.add(layers.Dense(512, activation='relu'))
 model.add(layers.Dense(1, activation='sigmoid'))
 
@@ -33,28 +34,28 @@ model.compile(loss='binary_crossentropy', optimizer=optimizers.RMSprop(lr=1e-4),
 
 # ImageDataGeneratorを使ってディレクトリから画像を読み込む
 # 全ての画像を1/255でスケーリング
-train_datagen = ImageDataGenerator(rescale=1./255)
+train_datagen = ImageDataGenerator(rescale=1./255, rotation_range=40, width_shift_range=0.2, height_shift_range=0.2, shear_range=0.2, zoom_range=0.2, horizontal_flip=True)
 validation_datagen = ImageDataGenerator(rescale=1./255)
 
 train_generator = train_datagen.flow_from_directory(
     train_dir,  # ターゲットディレクトリ
     target_size=(150, 150),  # 全ての画像のサイズを150×150に変更
-    batch_size=20,  # バッチサイズ
+    batch_size=32,  # バッチサイズ
     class_mode='binary'  # binary_crossentropyを使用するため二値のラベルが必要
 )
 
 validation_generator = validation_datagen.flow_from_directory(
     validation_dir,
     target_size=(150, 150),
-    batch_size=20,
+    batch_size=32,
     class_mode='binary'
 )
 
 # バッチジェネレータを使ってモデルを適合
-history = model.fit_generator(train_generator, steps_per_epoch=100, epochs=30, validation_data=validation_generator, validation_steps=50)
+history = model.fit_generator(train_generator, steps_per_epoch=100, epochs=100, validation_data=validation_generator, validation_steps=50)
 
 # モデルを保存
-model.save('karaage_poodle_small_1.h5')
+model.save('karaage_poodle_small_2.h5')
 
 # 訓練時の損失値と正解率をプロット
 acc = history.history['acc']
